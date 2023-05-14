@@ -169,9 +169,9 @@ function Home(){
         <div className="App">
       <h1>My recipes</h1>
 
-        <input placeholder="Enter Post Title" onChange={event => setQuery(event.target.value)} />
+        <input placeholder="Enter Recipe Title" class="searchbar" onChange={event => setQuery(event.target.value)} />
         
-    {isAuth? (<button onClick={() => setPopupActive(!popupActive)}>Add recipe</button>):(<></>)}
+    {isAuth? (<button class="addrecipe" onClick={() => setPopupActive(!popupActive)}>Add recipe</button>):(<></>)}
     {/* isAuth && (<button onClick={() => setPopupActive(!popupActive)}>Add recipe</button>); */}
 
       <div className="recipes">
@@ -183,27 +183,27 @@ function Home(){
             }
           }).map((recipe) => (
           <div className="recipe" key={recipe.id}>
-            <h3>{recipe.title}</h3>
+            <h3 class="recipe-title">{recipe.title}</h3>
 
 
             <img
               src={recipe.imageUrl}
               alt={recipe.title}
-              style={{ width: "100%", padding: 10 }}
+              style={{ width: "100%", padding: 0 }}
             />
 
 
 
 
             <p dangerouslySetInnerHTML={{ __html: recipe.desc }}></p>
-            <h3>@{recipe.chef.name}</h3>
+            <h3 class="chef-name">@{recipe.chef.name}</h3>
 
 
             {/* <h3>@{recipe.chef.map((name,i))}</h3> */}
 
 
             {recipe.viewing && <div>
-              <h4>Ingredients</h4>
+              <h4 class="titles">Ingredients</h4>
               <ul>
                 {recipe.ingredients.map((ingredient, i) => (
                   <div >
@@ -216,7 +216,7 @@ function Home(){
                 ))}
               </ul>
 
-              <h4>Steps</h4>
+              <h4 class="titles">Steps</h4>
               <ol>
                 {recipe.steps.map((step, i) => (
                   <li key={i}>{step}</li>
@@ -237,7 +237,7 @@ function Home(){
 
       {popupActive && <div className="popup">
         <div className="popup-inner">
-          <h2>Add a new recipe</h2>
+          <h2 class="popup-add-recipe">ADD A NEW RECIPE</h2>
 
           <form onSubmit={handleSubmit}>
 

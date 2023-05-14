@@ -40,9 +40,9 @@ function App() {
 
 
     <Router>
-      <nav>
-        <Link to="/">Home</Link>
-        {!isAuth ? <Link to="/login">Login</Link>: (
+      <nav class="navbar">
+        <Link to="/"><button>Home</button></Link>
+        {!isAuth ? <Link to="/login"><button>Login</button></Link>: (
 
         <button onClick={signUserOut}>Log Out</button>
         )}
