@@ -1,5 +1,9 @@
 import { db } from "./firebase.config"
 import { useState, useEffect } from "react"
+import {storage} from "./firebase.config";
+import {ref, uploadBytes, getDownloadURL, deleteObject} from "firebase/storage";
+import {v4} from 'uuid';
+
 import {
   collection,
   onSnapshot,
@@ -8,18 +12,32 @@ import {
   deleteDoc
 } from "firebase/firestore"
 
-function App() {
+function App() { 
   const [recipes, setRecipes] = useState([])
   const [form, setForm] = useState({
     title: "",
     desc: "",
     ingredients: [],
-    steps: []
+    steps: [],
+    image: ""
   })
   const [popupActive, setPopupActive] = useState(false)
 
-  const [imageUpload, setImageUpload]=useState(null);
-  const uploadImage=()=>{};
+  // const [progress, setProgress] = useState(0);
+
+  // const [imageUpload, setImageUpload]=useState(null);
+
+  // const uploadImage=()=>{
+  //   if (imageUpload == null) return;
+  //   const imageRef= ref(storage, `images/${imageUpload.name+v4()}`);
+  //   uploadBytes(imageRef, imageUpload).then( ()=>{
+  //     alert("Image uploaded");
+
+  //   });
+
+
+
+  
 
 
 
@@ -57,6 +75,35 @@ function App() {
     setRecipes(recipesClone)
   }
 
+  const uploadImage=()=>{
+    if (form.image == null) return;
+    const imageRef= ref(storage, `images/${form.image.name+v4()}`);
+    uploadBytes(imageRef, form.image).then( (snapshot)=>{
+
+      // const progressPercent = Math.round(
+      //   (snapshot.bytesTransferred / snapshot.totalBytes) * 100
+      // );
+      // setProgress(progressPercent);
+      alert("Image uploaded");
+      // setProgress(0);
+
+      
+
+      getDownloadURL(snapshot.ref).then((url) => {
+        addDoc(recipesCollectionRef, {
+          title: form.title,
+          desc: form.desc,
+          imageUrl: url,
+          ingredients: form.ingredients,
+          steps:form.steps
+          
+        })
+      });
+
+    });
+
+  };
+
   const handleSubmit = e => {
     e.preventDefault()
 
@@ -64,23 +111,43 @@ function App() {
       !form.title ||
       !form.desc ||
       !form.ingredients ||
-      !form.steps
+      !form.steps ||
+      !form.image
     ) {
       alert("Please fill out all fields")
       return
     }
 
-    addDoc(recipesCollectionRef, form)
+    // addDoc(recipesCollectionRef, {
+    //   title: form.title,
+    //   description: form.desc,
+    //   imageUrl: url,
+    //   ingredients: form.ingredients,
+    //   steps:form.steps
+      
+    // })
 
     setForm({
       title: "",
       desc: "",
       ingredients: [],
-      steps: []
+      steps: [],
+      image: ""
     })
 
     setPopupActive(false)
   }
+
+
+
+
+  
+
+
+
+
+
+
 
   const handleIngredient = (e, i) => {
     const ingredientsClone = [...form.ingredients]
@@ -118,9 +185,19 @@ function App() {
     })
   }
 
-  const removeRecipe = id => {
+  const removeRecipe = (id, imageUrl)=> {
     deleteDoc(doc(db, "recipes", id))
+    deleteObject(ref(storage, imageUrl))
+    
   }
+
+  // const storageRef = imageUrl => {
+  //   ref(storage, imageUrl)
+    
+  // }
+  // const removeImage= storageRef=>{
+  //   deleteObject(storageRef)
+  // }
 
 
 
@@ -175,6 +252,16 @@ function App() {
           <div className="recipe" key={recipe.id}>
             <h3>{recipe.title}</h3>
 
+
+            <img
+              src={recipe.imageUrl}
+              alt={recipe.title}
+              style={{ width: "100%", padding: 10 }}
+            />
+
+
+
+
             <p dangerouslySetInnerHTML={{ __html: recipe.desc }}></p>
 
             {recipe.viewing && <div>
@@ -201,7 +288,7 @@ function App() {
 
             <div className="buttons">
               <button onClick={() => handleView(recipe.id)}>View {recipe.viewing ? 'less' : 'more'}</button>
-              <button className="remove" onClick={() => removeRecipe(recipe.id)}>Remove</button>
+              <button className="remove" onClick={() => removeRecipe(recipe.id, recipe.imageUrl)}>Remove</button>
             </div>
           </div>
         ))}
@@ -259,11 +346,35 @@ function App() {
             </div>
 
 
+            {/* <div className="form-group">
+              <label>Image</label>
+              <input type="file" onChange={(e)=>setImageUpload(e.target.files[0])} />
+              <button onClick={uploadImage}>Upload Image</button>
+            </div> */}
+
+
+
             <div className="form-group">
               <label>Image</label>
-              <input type="file" onChange={(event)=>setImageUpload(event.target.files)} />
-              <button onClick={uploadImage}>Upload Image</button>
+              <input type="file" onChange={(e)=>setForm({...form, image:e.target.files[0]})} />
+              {/* <button onClick={uploadImage}>Upload Image</button> */}
             </div>
+
+            {/* {progress === 0 ? null : (
+            <div className="progress">
+              <div
+                className="progress-bar progress-bar-striped mt-2"
+                style={{ width: `${progress}%` }}
+              >
+                {`uploading image ${progress}%`}
+              </div>
+            </div>
+          )} */}
+
+          <button onClick={uploadImage}>Upload Image</button>
+
+
+        
 
 
 
