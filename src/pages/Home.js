@@ -66,26 +66,7 @@ function Home(){
     setRecipes(recipesClone)
   }
 
-  const uploadImage=()=>{
-    if (form.image == null) return;
-    const imageRef= ref(storage, `images/${form.image.name+v4()}`);
-    uploadBytes(imageRef, form.image).then( (snapshot)=>{
-        alert("Image uploaded");
-        getDownloadURL(snapshot.ref).then((url) => {
-            addDoc(recipesCollectionRef, {
-              title: form.title,
-              desc: form.desc,
-              imageUrl: url,
-              ingredients: form.ingredients,
-              steps:form.steps,
-              chef:{name: auth.currentUser.displayName , id:auth.currentUser.uid}
-              
-            })
-          });
-    
-        });
-    
-      };
+  
 
       const handleSubmit = e => {
         e.preventDefault()
@@ -110,6 +91,51 @@ function Home(){
       
           setPopupActive(false)
         }
+
+        const uploadImage=()=>{
+          if (form.image == null) return;
+          const imageRef= ref(storage, `images/${form.image.name+v4()}`);
+
+          if (
+            !form.title ||
+            !form.desc ||
+            !form.ingredients ||
+            !form.steps ||
+            !form.image
+          ) {
+            alert("Please fill out all fields")
+            return
+          }
+
+          uploadBytes(imageRef, form.image).then( (snapshot)=>{
+              alert("Image uploaded");
+              getDownloadURL(snapshot.ref).then((url) => {
+                  addDoc(recipesCollectionRef, {
+                    title: form.title,
+                    desc: form.desc,
+                    imageUrl: url,
+                    ingredients: form.ingredients,
+                    steps:form.steps,
+                    chef:{name: auth.currentUser.displayName , id:auth.currentUser.uid}
+                    
+                  })
+                });
+          
+              });
+
+              
+
+              setForm({
+                title: "",
+                desc: "",
+                ingredients: [],
+                steps: [],
+                image: ""
+              })
+          
+              setPopupActive(false)
+          
+            };
 
         const handleIngredient = (e, i) => {
             const ingredientsClone = [...form.ingredients]
@@ -151,6 +177,17 @@ function Home(){
             deleteDoc(doc(db, "recipes", id))
             deleteObject(ref(storage, imageUrl))
             
+          }
+          const closeform =()=>{
+            setForm({
+              title: "",
+              desc: "",
+              ingredients: [],
+              steps: [],
+              image: ""
+            })
+        
+            setPopupActive(false)
           }
 
           const [isAuth, setIsAuth] = useState(localStorage.getItem("isAuth"));
@@ -239,7 +276,7 @@ function Home(){
         <div className="popup-inner">
           <h2 class="popup-add-recipe">ADD A NEW RECIPE</h2>
 
-          <form onSubmit={handleSubmit}>
+          <form onSubmit={handleSubmit} >
 
             <div className="form-group">
               <label>Title</label>
@@ -261,11 +298,11 @@ function Home(){
               <label>Ingredients</label>
               {
                 form.ingredients.map((ingredient, i) => (
-                  <input
-                    type="text"
-                    key={i}
-                    value={ingredient}
-                    onChange={e => handleIngredient(e, i)} />
+                 <textarea
+                  type="text"
+                  key={i}
+                  value={ingredient===""?"• "+ingredient:ingredient}
+                  onChange={e => handleIngredient(e, i)} />
                 ))
               }
               <button type="button" onClick={handleIngredientCount}>Add ingredient</button>
@@ -278,7 +315,7 @@ function Home(){
                   <textarea
                     type="text"
                     key={i}
-                    value={step}
+                    value={step===""?(i+1)+". "+step:step}
                     onChange={e => handleStep(e, i)} />
                 ))
               }
@@ -320,7 +357,7 @@ function Home(){
 
             <div className="buttons">
               <button type="submit">Submit</button>
-              <button type="button" class="remove" onClick={() => setPopupActive(false)}>Close</button>
+              <button type="button" class="remove" onClick={closeform}>Close</button>
             </div>
 
           </form>
