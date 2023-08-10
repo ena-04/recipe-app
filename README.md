@@ -40,10 +40,3 @@ To use the app, follow these steps:
 4. Click on a recipe to view its details and instructions
 5. Click on the "Remove" button to remove your own recipe
 
-## Contributors
-
-- Enakkhi Saha (https://github.com/ena-04)
-
-## License
-
-This project is licensed under the [MIT License](https://opensource.org/licenses/MIT).
